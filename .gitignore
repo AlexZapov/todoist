@@ -1,0 +1,9 @@
+# Skip maven 'target' directory
+target
+
+# plus IDEA crap
+*.iml
+*.ipr
+.idea
+
+*~
