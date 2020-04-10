@@ -9,7 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 
 import java.io.IOException;
-import java.text.*;
 import java.util.*;
 
 
@@ -27,7 +26,7 @@ public class newTask {
     private final int[] LABEL_IDS = {5, 10};
     private final String DUE_STRING = "Tomorrow";
     private final String DUE_STRING_RU = "Завтра";
-    private final String DUE_LANG = "RU";
+    private final String DUE_LANG = "ru";
     private final String DUE_DATE = "2020-04-08";
     private final String DUE_DATETIME = "2020-04-09T19:42:27+00:00";
     UUID uuid = Generators.randomBasedGenerator().generate();
@@ -40,7 +39,7 @@ public class newTask {
 
     @Test
     public void test_200_OK_RequiredParams() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters");
+        System.out.println("Create new task without unrequirement parameters");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -53,37 +52,8 @@ public class newTask {
     }
 
     @Test
-    public void test_200_OK_AllParams() throws Exception {
-        System.out.println("Task sucessfully creating");
-        try {
-            String result = sendPost(TOKEN, String.valueOf(uuid_same2),
-                    json.append("{")
-                            .append("\"content\":\"" + CONTENT + "\",")
-                            .append("\"project_id\":" + PROJECT_ID + ",")
-                            .append("\"section_id\":" + SECTION_ID + ",")
-                            .append("\"order\":" + ORDER + ",")
-                            .append("\"priority\":" + PRIORITY + ",")
-                            .append("\"due_date\":\"" + DUE_DATE + "\",")
-                            .append("\"label_ids:")
-                            .append("[")
-                            .append("{")
-                            .append("\"id\":" + LABEL_IDS[0])
-                            .append("}")
-                            .append(",")
-                            .append("{")
-                            .append("\"id\":" + LABEL_IDS[1])
-                            .append("}")
-                            .append("]")
-                            .append("}"));
-            System.out.println(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
     public void test_200_OK_AllParams_due_date() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters and due_date");
+        System.out.println("Create new task with all parameters and due_date");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -102,7 +72,7 @@ public class newTask {
 
     @Test
     public void test_200_OK_AllParams_due_string() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters and due_string");
+        System.out.println("Create new task with all parameters and due_date and due_string");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -121,7 +91,7 @@ public class newTask {
 
     @Test
     public void test_400_Date_is_invalid() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters and due_string");
+        System.out.println("Check 400 response and Date is Invalid ");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -141,7 +111,7 @@ public class newTask {
 
     @Test
     public void test_200_OK_AllParams_due_datetime() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters and due_string");
+        System.out.println("Task sucessfully created without unrequirement parameters and due_datetime");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -174,7 +144,7 @@ public class newTask {
 
     @Test
     public void test_500_Internal_Server_Error() throws Exception {
-        System.out.println("Task sucessfully created without unrequirement parameters");
+        System.out.println("Incorrect project_id");
         try {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
@@ -253,11 +223,10 @@ public class newTask {
         post.setHeader("Content-Type", "application/json");
 
         post.setEntity(new StringEntity(requestBody.toString()));
-        System.out.println(requestBody);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault();
              CloseableHttpResponse response = httpClient.execute(post)) {
-            System.out.println(response.getStatusLine().getStatusCode());
+            System.out.println("Response code: " + response.getStatusLine().getStatusCode());
             result = EntityUtils.toString(response.getEntity());
                 if (response.getStatusLine().getStatusCode() == 200){
                     JSONObject myObject = new JSONObject(result);
