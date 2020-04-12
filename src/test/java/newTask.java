@@ -16,10 +16,12 @@ public class newTask {
 
     private CloseableHttpClient httpClient;
     private final String TOKEN = "bb1ad035d03c09d62297a4067e979ef72f2ebe06";
+    private final String USED_UUID = "295afb44-4g55-4735-819c-1e26b03e08ev";
     private long uuid_same2 = System.currentTimeMillis();
     private long uuid_same = uuid_same2;
     private final String CONTENT = "Test New Task_" + uuid_same2;
     private final long PROJECT_ID = 2233085179L;
+    private final long INCORRECT_PROJECT_ID = 556L;
     private final int SECTION_ID = 0;
     private final int ORDER = 1;
     private final int PRIORITY = 4;
@@ -149,7 +151,7 @@ public class newTask {
             String result = sendPost(TOKEN, String.valueOf(uuid_same2),
                     json.append("{")
                             .append("\"content\":\"" + CONTENT + "\",")
-                            .append("\"project_id\":" + 556)
+                            .append("\"project_id\":" + INCORRECT_PROJECT_ID)
                             .append("}"));
             System.out.println(result);
         } catch (IOException e) {
@@ -161,7 +163,7 @@ public class newTask {
     public void test_400_Ingnored() throws Exception {
         System.out.println("UUID is already used");
         try {
-            String result = sendPost(TOKEN, "295afb44-4g55-4735-819c-1e26b03e08ev",
+            String result = sendPost(TOKEN, USED_UUID,
                     json.append("{")
                     .append("\"content\":\"" + CONTENT + "\"")
                     .append("}"));
@@ -214,7 +216,7 @@ public class newTask {
         }
     }
 
-    private String sendPost(String token, String uuid, StringBuilder requestBody) throws Exception {
+    public String sendPost(String token, String uuid, StringBuilder requestBody) throws Exception {
 
         String result = "";
         HttpPost post = new HttpPost("https://api.todoist.com/rest/v1/tasks");
@@ -228,7 +230,20 @@ public class newTask {
              CloseableHttpResponse response = httpClient.execute(post)) {
             System.out.println("Response code: " + response.getStatusLine().getStatusCode());
             result = EntityUtils.toString(response.getEntity());
-                if (response.getStatusLine().getStatusCode() == 200){
+                if (!requestBody.toString().contains("content") || post.getFirstHeader("X-Request-Id").toString().contains(USED_UUID) ||
+                        post.getFirstHeader("Authorization").toString().equals("Authorization: Bearer ")){
+                    Assert.assertEquals(response.getStatusLine().getStatusCode(), 400);
+                }
+                else if (!post.getFirstHeader("Authorization").toString().contains(TOKEN)){
+                    Assert.assertEquals(response.getStatusLine().getStatusCode(), 403);
+                    System.out.println("403 response. Result = " + result.replace("\n", ""));
+                    Assert.assertEquals(result.replace("\n", ""), "Forbidden");
+                }
+                else if (requestBody.toString().contains(String.valueOf(INCORRECT_PROJECT_ID))){
+                    Assert.assertEquals(response.getStatusLine().getStatusCode(), 500);
+                    Assert.assertEquals(result.replace("\n", ""), "Internal Server Error");
+                }
+                else if (response.getStatusLine().getStatusCode() == 200){
                     JSONObject myObject = new JSONObject(result);
                     Assert.assertEquals(myObject.get("content"), CONTENT);
                     if (requestBody.toString().contains("project_id")) Assert.assertEquals(myObject.get("project_id"), PROJECT_ID);
